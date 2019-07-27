@@ -13,6 +13,10 @@
   ],
   "author": "Aryan Likhite",
   "license": "ISC",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/Rex1911/compile-code"
+  },
   "dependencies": {
     "cuid": "^2.1.6"
   }
