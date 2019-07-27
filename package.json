@@ -1,6 +1,6 @@
 {
   "name": "compile-code",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A module to compile code from different languages using NodeJS. Useful for making online compilers",
   "main": "compile.js",
   "scripts": {
