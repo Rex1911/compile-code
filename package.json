@@ -1,0 +1,19 @@
+{
+  "name": "compile-code",
+  "version": "1.0.0",
+  "description": "A module to compile code from different languages using NodeJS. Useful for making online compilers",
+  "main": "compile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "compile",
+    "compiler",
+    "online-compiler"
+  ],
+  "author": "Aryan Likhite",
+  "license": "ISC",
+  "dependencies": {
+    "cuid": "^2.1.6"
+  }
+}
