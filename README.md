@@ -9,6 +9,8 @@ Currently supported languages:
 - Java
 ```
 
+If you want a open-source online API service which compiles your code, checkout my other project [compile-code-docker](https://github.com/Rex1911/compile-code-docker) which takes this module and creates a ExpressJS API server inside a docker container where you can send your code to get compiled and get back the output. 
+
 # Getting started
 Download the module from npm
 
