@@ -1,45 +1,38 @@
-const { execSync } = require('child_process');
-const fs = require('fs');
+const exec = require('./promise-exec')
+const fs = require('fs').promises;
 const cuid = require('cuid');
 
-exports.compile = (code, input, fn) => {
+exports.compile =  async (code, input, fn) => {
     //Writing code to a temporary file
     let baseFilename = cuid.slug();
     let filename = baseFilename + ".py";
-    fs.writeFileSync("./tmpcode/" + filename, code)
+    await fs.writeFile("./tmpcode/" + filename, code)
 
     //Running the code
     command = `python3 ${filename}`;
     try{
-        let run;
-        if(input == "") {
-            run = execSync(command, {cwd:"./tmpcode",timeout: 5000, stdio: ['pipe','pipe','pipe']});
-        } else {
-            run = execSync(command, {cwd:"./tmpcode",input: input,timeout: 5000, stdio: ['pipe','pipe','pipe']});
-        }
+        let { stdout, stderr } = await exec(command, {cwd: './tmpcode', timeout: 5000},input==""? null:input)
         let feedback = {
-            stdout: run.toString(),
-            stderr: null
+            stdout, 
+            stderr
         }
         fn(feedback)
     } catch(err) {
-        if(err.code == 'ETIMEDOUT') { // If the code goes beyond the timeout period
+        if(err.err.killed || err.stderr == "") {
             let feedback = {
                 stdout: null,
-                stderr: err.stderr.toString() || "Code timedout (possibly went into a never-ending loop)"
+                stderr: 'Code timed out (possibly went into a never-ending loop)'
             }
             fn(feedback);
         } else {
             let feedback = {
                 stdout: null,
-                stderr: err.stderr.toString()
+                stderr: err.stderr
             }
             fn(feedback);
         }
     }
 
     //Deleting the files which were created
-    fs.unlink('./tmpcode/' + filename, (err) => {
-        if (err) throw err;
-    });
+    await fs.unlink('./tmpcode/' + filename);
 }

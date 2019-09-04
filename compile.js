@@ -1,6 +1,5 @@
 const fs = require('fs');
 const c = require('./util/c.js');
-const cpp = require('./util/cpp.js');
 const python3 = require('./util/python3.js');
 const java = require('./util/java.js');
 
@@ -15,10 +14,10 @@ exports.init = () => {
 exports.compile = (code,source,input,fn) => {
     switch(code) {
         case 1: 
-            c.compile(source,input,fn);
+            c.compile(source,input,fn,1); // Compiling C
             break;
         case 2:
-            cpp.compile(source,input,fn);
+            c.compile(source,input,fn,2); // Compiling C++
             break;
         case 3: 
             python3.compile(source,input,fn);

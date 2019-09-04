@@ -1,71 +1,59 @@
-const { execSync } = require('child_process');
-const fs = require('fs');
+const exec = require('./promise-exec');
+const fs = require('fs').promises;
 const cuid = require('cuid');
 
-exports.compile = (code, input, fn) => {
+exports.compile = async (code, input, fn) => {
     //Writing code to a temporary file
     let baseFilename = cuid.slug();
     let filename = baseFilename + ".java";
     
-    fs.mkdirSync(`./tmpcode/${baseFilename}`)
-    
-    fs.writeFileSync(`./tmpcode/${baseFilename}/${filename}`, code)
+    await fs.mkdir(`./tmpcode/${baseFilename}`) 
+    await fs.writeFile(`./tmpcode/${baseFilename}/${filename}`, code)
     
     //Compiling the code
     let command = `javac ${filename}`;
-    try{//                                                     stdin  stdout  stderr
-        let java = execSync(command, {cwd: `./tmpcode/${baseFilename}`, stdio: ['pipe','pipe','pipe']});
+    try{
+        let { stdout, stderr } = await exec(command, {cwd: `./tmpcode/${baseFilename}`, timeout: 5000})
     } catch(err) {
         let feedback = {
             stdout: null,
-            stderr: err.stderr.toString()
+            stderr: err.stderr
         }
         fn(feedback);
-        try{
-            fs.unlinkSync(`./tmpcode/${baseFilename}/${filename}`);
-            fs.rmdirSync(`./tmpcode/${baseFilename}`)
-        } catch (err) {
-            console.log(err);
-        }
+        await fs.unlink(`./tmpcode/${baseFilename}/${filename}`);
+        await fs.rmdir(`./tmpcode/${baseFilename}`);
         return;
     }
+
 
     //Running the code
     command = `java Main`;
     try{
-        let run;
-        if(input == "") {
-            run = execSync(command, {cwd:`./tmpcode/${baseFilename}`,timeout: 5000, stdio: ['pipe','pipe','pipe']});
-        } else {
-            run = execSync(command, {cwd:`./tmpcode/${baseFilename}`,input: input,timeout: 5000, stdio: ['pipe','pipe','pipe']});
-        }
+        let { stdout, stderr } = await exec(command, {cwd: `./tmpcode/${baseFilename}`, timeout: 5000},input==""? null:input)
         let feedback = {
-            stdout: run.toString(),
-            stderr: null
+            stdout, 
+            stderr
         }
         fn(feedback)
     } catch(err) {
-        if(err.code == 'ETIMEDOUT') {
+        if(err.err.killed || err.stderr == "") {
             let feedback = {
                 stdout: null,
-                stderr: 'Code timed-out (possibly went into a never-ending loop)'
+                stderr: 'Code timed out (possibly went into a never-ending loop)'
             }
             fn(feedback);
         } else {
             let feedback = {
                 stdout: null,
-                stderr: err.stderr.toString()
+                stderr: err.stderr
             }
             fn(feedback);
         }
     }
 
-    fs.readdir(`./tmpcode/${baseFilename}`, (err,files) => {
-        files.forEach(file => {
-            fs.unlinkSync(`./tmpcode/${baseFilename}/${file}`);
-        })
-
-        fs.rmdirSync(`./tmpcode/${baseFilename}`)
+    let files = await fs.readdir(`./tmpcode/${baseFilename}`);
+    files.forEach( async (file) => {
+        await fs.unlink(`./tmpcode/${baseFilename}/${file}`);
     })
-    
+    await fs.rmdir(`./tmpcode/${baseFilename}`)  
 }
