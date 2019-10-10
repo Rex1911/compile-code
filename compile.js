@@ -20,10 +20,12 @@ exports.compile = (code,source,input,fn) => {
             c.compile(source,input,fn,2); // Compiling C++
             break;
         case 3: 
-            python3.compile(source,input,fn);
+            python3.compile(source,input,fn,1); // Python 3
             break;          
         case 4:
             java.compile(source,input,fn);
-            break;  
+            break;
+        case 5:
+            python3.compile(source,input,fn,2) // Python 2 
     }
 }

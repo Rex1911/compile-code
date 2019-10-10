@@ -2,14 +2,19 @@ const exec = require('./promise-exec')
 const fs = require('fs').promises;
 const cuid = require('cuid');
 
-exports.compile =  async (code, input, fn) => {
+exports.compile =  async (code, input, fn, langCode) => {
     //Writing code to a temporary file
     let baseFilename = cuid.slug();
     let filename = baseFilename + ".py";
     await fs.writeFile("./tmpcode/" + filename, code)
 
     //Running the code
-    command = `python3 ${filename}`;
+    let command;
+    if(langCode == 1) {
+        command = `python3 ${filename}`
+    } else if(langCode == 2) {
+        command = `python ${filename}`
+    }
     try{
         let { stdout, stderr } = await exec(command, {cwd: './tmpcode', timeout: 5000},input==""? null:input)
         let feedback = {
